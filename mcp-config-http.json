@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "huaweicloud-ecs": {
+      "url": "http://localhost:8888/mcp",
+      "disabled": false,
+      "type": "streamableHttp",
+      "autoApprove": []
+    }
+  }
+}

@@ -32,6 +32,16 @@ dependencies = [
     "huaweicloudsdkcore>=3.1.150"
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 120
+
 [tool.setuptools]
 packages = [
     "assets",
@@ -200,6 +210,7 @@ packages = [
     "huaweicloud_services_server.mcp_server_vpcep.src.mcp_server_vpcep",
     "huaweicloud_services_server.mcp_server_vpn.src.mcp_server_vpn",
     "huaweicloud_services_server.mcp_server_waf.src.mcp_server_waf",
+    "huaweicloud_services_server.mcp_server_gateway.src.mcp_server_gateway",
 ]
 
 
@@ -370,8 +381,17 @@ packages = [
  "huaweicloud_services_server.mcp_server_vpcep.src.mcp_server_vpcep" = ["config/*.yaml", "config/*.json"]
  "huaweicloud_services_server.mcp_server_vpn.src.mcp_server_vpn" = ["config/*.yaml", "config/*.json"]
  "huaweicloud_services_server.mcp_server_waf.src.mcp_server_waf" = ["config/*.yaml", "config/*.json"]
+"huaweicloud_services_server.mcp_server_gateway.src.mcp_server_gateway" = ["config/*.yaml", "config/*.json"]
  "huaweicloud_services_server.mcp_server_workspace.src.mcp_server_workspace" = ["config/*.yaml", "config/*.json"]
  "huaweicloud_services_server.mcp_server_workspaceapp.src.mcp_server_workspaceapp" = ["config/*.yaml", "config/*.json"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.15.12",
+]
 
 
 [project.scripts]
@@ -492,3 +512,4 @@ mcp-server-vpc = "huaweicloud_services_server.mcp_server_vpc.src.mcp_server_vpc.
 mcp-server-vpcep = "huaweicloud_services_server.mcp_server_vpcep.src.mcp_server_vpcep.run:main"
 mcp-server-vpn = "huaweicloud_services_server.mcp_server_vpn.src.mcp_server_vpn.run:main"
 mcp-server-waf = "huaweicloud_services_server.mcp_server_waf.src.mcp_server_waf.run:main"
+mcp-server-gateway = "huaweicloud_services_server.mcp_server_gateway.src.mcp_server_gateway.run:main"

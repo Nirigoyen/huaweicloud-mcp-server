@@ -3,7 +3,10 @@ dist
 .env
 **/__pycache__
 test.py
+test_deploy.py
 /.venv/
 .vscode
 *.egg-info
 uv.lock
+.pytest_cache
+.ruff_cache

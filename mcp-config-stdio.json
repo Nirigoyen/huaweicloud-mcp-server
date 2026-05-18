@@ -1,0 +1,116 @@
+{
+  "mcpServers": {
+    "huaweicloud-ecs": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-ecs",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-vpc": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-vpc",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-rds": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-rds",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-iam": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-iam",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-elb": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-elb",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-eip": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-eip",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    },
+    "huaweicloud-gateway": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nico/ai-projects/huaweicloud-mcp-server",
+        "run",
+        "mcp-server-gateway",
+        "-t",
+        "stdio"
+      ],
+      "env": {
+        "HUAWEI_ACCESS_KEY": "YOUR_ACCESS_KEY",
+        "HUAWEI_SECRET_KEY": "YOUR_SECRET_KEY",
+        "HUAWEI_REGION": "cn-north-4"
+      }
+    }
+  }
+}

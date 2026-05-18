@@ -17,6 +17,7 @@ from .model import MCPConfig, TransportType
 from .variable import (
     HUAWEI_ACCESS_KEY,
     HUAWEI_SECRET_KEY,
+    HUAWEI_REGION,
     MCP_SERVER_MODE,
     MCP_SERVER_PORT,
 )
@@ -51,16 +52,10 @@ class CustomClient(Client):
         query_params = self._parse_query_params(collection_formats, query_params)
         post_params = self._parse_post_params(collection_formats, post_params)
 
-        if (
-            self._config.ignore_content_type_for_get_request
-            and method == "GET"
-            and not request_body
-        ):
+        if self._config.ignore_content_type_for_get_request and method == "GET" and not request_body:
             content_type = header_params.pop(self._CONTENT_TYPE, None)
         else:
-            content_type = header_params.setdefault(
-                self._CONTENT_TYPE, self._APPLICATION_JSON
-            )
+            content_type = header_params.setdefault(self._CONTENT_TYPE, self._APPLICATION_JSON)
 
         if content_type == self._MULTIPART_FORM_DATA:
             body = self._parse_form_data_body(request_body)
@@ -73,9 +68,7 @@ class CustomClient(Client):
             body = self._parse_bson_body(request_body)
         elif content_type == self._APPLICATION_OCTET_STREAM:
             content_length = header_params.get("content-length")
-            body = self._parse_stream_body(
-                request_body, progress_callback, content_length
-            )
+            body = self._parse_stream_body(request_body, progress_callback, content_length)
         else:
             body = self._parse_body(request_body, post_params)
 
@@ -160,7 +153,10 @@ class CustomClient(Client):
         return response
 
 
-def create_api_client(ak, sk, x_host, region="cn-north-4"):
+def create_api_client(ak, sk, x_host, region=None):
+    if not region:
+        region = "cn-north-4"
+
     endpoint = x_host
 
     if x_host.find("com") != -1:
@@ -188,9 +184,7 @@ def build_http_info(name, arguments, openapi_spec, mcp_tools):
     if not invoked_tool:
         raise Exception(f"MCP工具({name})未找到")
     method = openapi_spec.get("paths").get(f"/{name}").get("x-method")
-    resource_path = (
-        openapi_spec.get("paths").get(f"/{name}").get("x-url").replace("{endpoint}", "")
-    )
+    resource_path = openapi_spec.get("paths").get(f"/{name}").get("x-url").replace("{endpoint}", "")
 
     cname = None
     collection_formats = {}
@@ -205,10 +199,7 @@ def build_http_info(name, arguments, openapi_spec, mcp_tools):
     for property_name, property_body in properties.items():
         if property_name in ["X-Auth-Token"]:
             pass
-        elif (
-            property_name in invoked_tool.inputSchema.get("required", [])
-            and arguments.get(property_name) is None
-        ):
+        elif property_name in invoked_tool.inputSchema.get("required", []) and arguments.get(property_name) is None:
             raise Exception(f"{property_name}为必填参数.")
 
         property_in = property_body.get("in")
@@ -220,9 +211,7 @@ def build_http_info(name, arguments, openapi_spec, mcp_tools):
             header_params[property_name] = arguments.get(property_name)
         elif property_in is None:
             request_body[property_name] = arguments.get(property_name)
-    header_params["Content-Type"] = http_utils.select_header_content_type(
-        ["application/json;charset=UTF-8"]
-    )
+    header_params["Content-Type"] = http_utils.select_header_content_type(["application/json;charset=UTF-8"])
     http_info = {
         "method": method,
         "resource_path": resource_path,
@@ -269,11 +258,13 @@ def load_config(config_path: Union[str, Path]) -> MCPConfig:
             port=config_dict.get("port", 8888),
             ak=config_dict.get("ak", ""),
             sk=config_dict.get("sk", ""),
+            region=config_dict.get("region", None),
         )
 
         env_mapping = [
             (HUAWEI_ACCESS_KEY, "ak", None, None),
             (HUAWEI_SECRET_KEY, "sk", None, None),
+            (HUAWEI_REGION, "region", None, None),
             (MCP_SERVER_MODE, "transport", None, get_args(TransportType)),
             (MCP_SERVER_PORT, "port", int, None),
         ]
@@ -285,9 +276,7 @@ def load_config(config_path: Union[str, Path]) -> MCPConfig:
                 value_to_set = converter(env_value_str) if converter else env_value_str
                 # 验证 Literal 类型的值
                 if allowed_values is not None and value_to_set not in allowed_values:
-                    raise ValueError(
-                        f"无效值 '{value_to_set}'. 有效值清单: {allowed_values}"
-                    )
+                    raise ValueError(f"无效值 '{value_to_set}'. 有效值清单: {allowed_values}")
                 setattr(cfg, attr_name, value_to_set)
         # 参数校验
         cfg.check()

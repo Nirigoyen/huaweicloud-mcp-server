@@ -1,0 +1,78 @@
+services:
+  gateway:
+    build: .
+    container_name: huaweicloud-mcp-gateway
+    environment:
+      HUAWEI_ACCESS_KEY: ${HUAWEI_ACCESS_KEY}
+      HUAWEI_SECRET_KEY: ${HUAWEI_SECRET_KEY}
+      HUAWEI_REGION: ${HUAWEI_REGION:-cn-north-4}
+      MCP_SERVER_MODE: http
+      MCP_SERVER_PORT: 8888
+      SERVICE: gateway
+    ports:
+      - "${MCP_SERVER_PORT:-8888}:8888"
+    restart: unless-stopped
+
+  ecs:
+    build: .
+    container_name: huaweicloud-mcp-ecs
+    environment:
+      HUAWEI_ACCESS_KEY: ${HUAWEI_ACCESS_KEY}
+      HUAWEI_SECRET_KEY: ${HUAWEI_SECRET_KEY}
+      HUAWEI_REGION: ${HUAWEI_REGION:-cn-north-4}
+      MCP_SERVER_MODE: http
+      MCP_SERVER_PORT: 8889
+      SERVICE: ecs
+    ports:
+      - "8889:8889"
+    restart: unless-stopped
+    profiles:
+      - individual
+
+  vpc:
+    build: .
+    container_name: huaweicloud-mcp-vpc
+    environment:
+      HUAWEI_ACCESS_KEY: ${HUAWEI_ACCESS_KEY}
+      HUAWEI_SECRET_KEY: ${HUAWEI_SECRET_KEY}
+      HUAWEI_REGION: ${HUAWEI_REGION:-cn-north-4}
+      MCP_SERVER_MODE: http
+      MCP_SERVER_PORT: 8890
+      SERVICE: vpc
+    ports:
+      - "8890:8890"
+    restart: unless-stopped
+    profiles:
+      - individual
+
+  rds:
+    build: .
+    container_name: huaweicloud-mcp-rds
+    environment:
+      HUAWEI_ACCESS_KEY: ${HUAWEI_ACCESS_KEY}
+      HUAWEI_SECRET_KEY: ${HUAWEI_SECRET_KEY}
+      HUAWEI_REGION: ${HUAWEI_REGION:-cn-north-4}
+      MCP_SERVER_MODE: http
+      MCP_SERVER_PORT: 8891
+      SERVICE: rds
+    ports:
+      - "8891:8891"
+    restart: unless-stopped
+    profiles:
+      - individual
+
+  iam:
+    build: .
+    container_name: huaweicloud-mcp-iam
+    environment:
+      HUAWEI_ACCESS_KEY: ${HUAWEI_ACCESS_KEY}
+      HUAWEI_SECRET_KEY: ${HUAWEI_SECRET_KEY}
+      HUAWEI_REGION: ${HUAWEI_REGION:-cn-north-4}
+      MCP_SERVER_MODE: http
+      MCP_SERVER_PORT: 8892
+      SERVICE: iam
+    ports:
+      - "8892:8892"
+    restart: unless-stopped
+    profiles:
+      - individual

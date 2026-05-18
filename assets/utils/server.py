@@ -32,6 +32,17 @@ from .model import MCPConfig
 from .openapi import OpenAPIToToolsConverter
 from .variable import TRANSPORT_SSE, TRANSPORT_HTTP
 
+DEFAULT_REGION = "cn-north-4"
+
+REGION_SCHEMA = {
+    "type": "string",
+    "description": (
+        "Huawei Cloud region ID. Examples: cn-north-4, cn-north-1, cn-east-2, "
+        "ap-southeast-1, ap-southeast-2, la-south-2, sa-brazil-1, af-south-1, "
+        "tr-west-1, me-east-1. Falls back to HUAWEI_REGION env var or cn-north-4."
+    ),
+}
+
 logger = get_logger(__name__)
 configure_logging("INFO")
 
@@ -64,22 +75,17 @@ class MCPServer:
                 raise ValueError("无法加载服务器配置")
 
             self.server = Server(f"hwc-mcp-server-{self.config.service_code.lower()}")
-            logger.info(
-                f"初始化MCP服务器实例： hwc-mcp-server-{self.config.service_code.lower()}"
-            )
+            logger.info(f"初始化MCP服务器实例： hwc-mcp-server-{self.config.service_code.lower()}")
 
             # 加载OpenAPI规范
-            openapi_path = (
-                Path(self.config_path.parent) / f"{self.config.service_code}.json"
-            )
+            openapi_path = Path(self.config_path.parent) / f"{self.config.service_code}.json"
             self.openapi_dict = load_openapi(openapi_path)
             if not self.openapi_dict:
-                raise ValueError(
-                    f"加载OpenAPI文档失败，请检查{openapi_path}文档内容是否有误"
-                )
+                raise ValueError(f"加载OpenAPI文档失败，请检查{openapi_path}文档内容是否有误")
 
             # 转换为MCP工具
             self.tools = OpenAPIToToolsConverter(self.openapi_dict).convert()
+            self._inject_region_parameter()
             logger.info(f"成功加载 {len(self.tools)} 个工具")
 
             # 注册工具处理函数
@@ -119,10 +125,8 @@ class MCPServer:
             return self.tools
 
         @self.server.call_tool()
-        async def call_tool(
-            name: str, arguments: dict
-        ) -> list[TextContent | ImageContent | EmbeddedResource]:
-            region = arguments.get("region") or "cn-north-4"
+        async def call_tool(name: str, arguments: dict) -> list[TextContent | ImageContent | EmbeddedResource]:
+            region = arguments.get("region") or self.config.region or DEFAULT_REGION
             x_host = self.openapi_dict["info"]["x-host"]
 
             ak = self.config.ak
@@ -139,9 +143,7 @@ class MCPServer:
             try:
                 arguments = filter_parameters(arguments)
 
-                http_info = build_http_info(
-                    name, arguments, self.openapi_dict, self.tools
-                )
+                http_info = build_http_info(name, arguments, self.openapi_dict, self.tools)
 
                 response = client.do_http_request(**http_info)
                 response_data = response.json() if response and response.content else {}
@@ -162,6 +164,12 @@ class MCPServer:
         """确保服务器已初始化"""
         if not self.initialized:
             raise RuntimeError("服务器未初始化")
+
+    def _inject_region_parameter(self) -> None:
+        """将 region 参数注入到每个工具的 inputSchema 中"""
+        for tool in self.tools:
+            properties = tool.inputSchema.setdefault("properties", {})
+            properties["region"] = REGION_SCHEMA
 
     async def run_server(self):
         self._ensure_initialized()
@@ -192,9 +200,7 @@ class MCPServer:
                 await self.register_client(client_id, request)
 
                 # 使用MCP的SSE连接工具建立连接
-                async with sse.connect_sse(
-                    request.scope, request.receive, request._send
-                ) as streams:
+                async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
                     input_stream, output_stream = streams
 
                     try:
@@ -241,9 +247,7 @@ class MCPServer:
                 )
 
             # 如果没有异常，返回成功响应
-            return JSONResponse(
-                {"status": "SSE connection closed normally"}, status_code=200
-            )
+            return JSONResponse({"status": "SSE connection closed normally"}, status_code=200)
 
         app = Starlette(
             routes=[
@@ -268,9 +272,7 @@ class MCPServer:
     async def run_stdio_server(self):
         logger.info("启动STDIO服务器")
         async with stdio_server() as streams:
-            await self.server.run(
-                streams[0], streams[1], self.server.create_initialization_options()
-            )
+            await self.server.run(streams[0], streams[1], self.server.create_initialization_options())
 
     async def run_http_server(self):
         logger.info("启动StreamableHTTP服务器")
@@ -281,9 +283,7 @@ class MCPServer:
             stateless=True,
         )
 
-        async def handle_streamable_http(
-            scope: Scope, receive: Receive, send: Send
-        ) -> None:
+        async def handle_streamable_http(scope: Scope, receive: Receive, send: Send) -> None:
             await session_manager.handle_request(scope, receive, send)
 
         @contextlib.asynccontextmanager
@@ -305,8 +305,6 @@ class MCPServer:
             lifespan=lifespan,
         )
 
-        http_config = uvicorn.Config(
-            starlette_app, host="0.0.0.0", port=self.config.port
-        )
+        http_config = uvicorn.Config(starlette_app, host="0.0.0.0", port=self.config.port)
         http_server = uvicorn.Server(http_config)
         await http_server.serve()
